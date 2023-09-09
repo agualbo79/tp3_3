@@ -118,8 +118,14 @@ class Film:
         print("PARAMS:", params)
 
     @classmethod
-    def update(cls, film):
-        """Update a film"""
+    def update(cls, film_id, update_data):
+        """Actualiza una película en la base de datos.
+    
+    Este método actualiza una película en la base de datos utilizando el ID de la película y los datos proporcionados. Solo se actualizarán las columnas permitidas y cuyos valores no sean `None`.
+    
+    Args:
+        film_id (int): El ID de la película que se desea actualizar.
+        update_data (dict): Un diccionario con los datos que se desean actualizar."""
         allowed_columns = {'title', 'description', 'release_year',
                            'language_id', 'original_language_id',
                            'rental_duration', 'rental_rate', 'length',
@@ -127,7 +133,7 @@ class Film:
         query_parts = []
         params = []
 
-        for key, value in film.__dict__.items():
+        for key, value in update_data.items():
             if key in allowed_columns and value is not None:
                 if key == 'special_features':
                     if len(value) == 0:
@@ -140,10 +146,8 @@ class Film:
                     query_parts.append(f"{key} = %s")
                     params.append(value)
 
-        # Agregar el film_id en los parámetros
-        params.append(film.film_id)
+        params.append(film_id)
 
-        # Verificar si hay columnas para actualizar
         if query_parts:
             query = "UPDATE sakila.film SET " + ", ".join(query_parts) + " WHERE film_id = %s"
             print("QUERY:", query)
@@ -151,13 +155,15 @@ class Film:
             DatabaseConnection.execute_query(query, params=params)
         else:
             print("No se especificaron columnas para actualizar.")
-
     
     @classmethod
     def delete(cls, film):
-        """Delete a film
-        Args:
-            - film (Film): Film object with the id attribute
+        """Elimina una película de la base de datos.
+    
+    Este método elimina una película de la base de datos utilizando el ID de la película proporcionado en el objeto `film`.
+    
+    Args:
+        film (Film): Un objeto `Film` que contiene el atributo `id` de la película que se desea eliminar.
         """
         query = "DELETE FROM sakila.film WHERE film_id = %s"
         params = film.film_id,
